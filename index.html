@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coleta de Endereço</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e6f0ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            max-width: 450px;
+            width: 100%;
+        }
+
+        h2 {
+            color: #007bff;
+            font-size: 26px;
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            color: #333;
+            font-weight: bold;
+            text-align: left;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        input[type="text"]::placeholder {
+            color: #aaa;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            background-color: gray;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: not-allowed;
+            transition: background-color 0.3s ease;
+        }
+
+        button.ativo {
+            background-color: #007bff;
+            cursor: pointer;
+        }
+
+        button.ativo:hover {
+            background-color: #0056b3;
+        }
+
+        .info {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .whatsapp {
+            margin-top: 15px;
+            font-size: 16px;
+        }
+
+        #localizacaoAviso {
+            color: red;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Coleta de Endereço</h2>
+        <p class="info">Você precisa ter visão do céu aberto para funcionar corretamente. Se necessário, vá para uma janela ou porta.</p>
+        <form id="meuFormulario">
+            <label for="nome">Nome:</label>
+            <input type="text" id="nome" name="nome" placeholder="Digite seu nome" required>
+            <input type="hidden" id="latitude" name="latitude">
+            <input type="hidden" id="longitude" name="longitude">
+            <input type="hidden" id="precisao" name="precisao">
+            <button type="submit" id="enviar" disabled>Enviar</button>
+        </form>
+        <p class="whatsapp">Precisa de ajuda? <a href="https://wa.me/557191783847" target="_blank">Fale conosco no WhatsApp</a></p>
+        <div id="localizacaoAviso"></div>
+        <div class="footer">Desenvolvido por Corpo de Anciãos</div>
+    </div>
+
+    <script>
+        function obterLocalizacao() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
+                    const precisao = position.coords.accuracy;
+                    
+                    document.getElementById('latitude').value = latitude;
+                    document.getElementById('longitude').value = longitude;
+                    document.getElementById('precisao').value = precisao;
+                    
+                    if (precisao < 40) {
+                        document.getElementById('enviar').disabled = false;
+                        document.getElementById('enviar').classList.add('ativo');
+                        document.getElementById('localizacaoAviso').innerText = ''; // Limpar o aviso caso a precisão esteja boa
+                    } else {
+                        document.getElementById('localizacaoAviso').innerText = "Sinal fraco! Tente se mover para um local mais aberto.";
+                    }
+                }, function(error) {
+                    alert('Erro ao obter localização: ' + error.message + '\nCertifique-se de que o GPS está ativado.');
+                    document.getElementById('localizacaoAviso').innerText = "Falha ao obter localização. Tente novamente.";
+                    setTimeout(obterLocalizacao, 800); // Repetir a solicitação após 0,8 segundos
+                }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+            } else {
+                alert('Seu navegador não suporta geolocalização.');
+                document.getElementById('localizacaoAviso').innerText = "Seu navegador não suporta geolocalização.";
+            }
+        }
+
+        window.onload = function() {
+            obterLocalizacao();
+            let dataSalva = localStorage.getItem('dataEnvio');
+            let hoje = new Date().toISOString().split('T')[0];
+            if (dataSalva === hoje) {
+                alert('Você já enviou seus dados hoje. Tente novamente amanhã.');
+                document.getElementById('enviar').disabled = true;
+            }
+        };
+
+        document.getElementById("meuFormulario").addEventListener("submit", function(e) {
+            e.preventDefault();
+            let nome = document.getElementById('nome').value.trim();
+
+            // Validação para aceitar apenas letras e espaços
+            if (nome.length < 3 || /[^a-zA-ZÀ-ÿ ]/.test(nome)) {
+                alert('Nome inválido! Digite um nome válido com pelo menos 3 letras e apenas letras e espaços.');
+                return;
+            }
+
+            if (!confirm("Tem certeza de que deseja enviar seus dados?")) {
+                return;
+            }
+            document.getElementById('enviar').disabled = true;
+            document.getElementById('enviar').innerText = "Enviando...";
+            localStorage.setItem('dataEnvio', new Date().toISOString().split('T')[0]);
+
+            // Coletando dados do formulário
+            let dados = {
+                nome: nome,
+                latitude: document.getElementById('latitude').value,
+                longitude: document.getElementById('longitude').value
+            };
+
+            // Enviando os dados para o Google Apps Script via fetch()
+            fetch('https://script.google.com/macros/s/AKfycbwbUES51EKSLQTnHo4woFXsKYgxELMurLOIolrl7_n9hSyk-ENvwuyUujXH2zo29dg/exec', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dados)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Dados enviados com sucesso!');
+                document.getElementById("meuFormulario").reset();
+                document.getElementById('enviar').innerText = "Enviar";
+                document.getElementById('enviar').disabled = false;
+            })
+            .catch(error => {
+                alert('Erro ao enviar dados: ' + error.message);
+                document.getElementById('enviar').innerText = "Enviar";
+                document.getElementById('enviar').disabled = false;
+            });
+        });
+    </script>
+</body>
+</html>
