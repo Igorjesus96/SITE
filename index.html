@@ -122,6 +122,7 @@
     <script>
         function obterLocalizacao() {
             if (navigator.geolocation) {
+                // Tentando obter a localização do usuário
                 navigator.geolocation.getCurrentPosition(function(position) {
                     const latitude = position.coords.latitude;
                     const longitude = position.coords.longitude;
@@ -156,7 +157,7 @@
         }
 
         window.onload = function() {
-            obterLocalizacao();
+            obterLocalizacao(); // Chama a função de obtenção de localização ao carregar a página
         };
 
         document.getElementById("meuFormulario").addEventListener("submit", function(e) {
