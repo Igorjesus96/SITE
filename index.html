@@ -190,10 +190,11 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(dados)
+                body: JSON.stringify(dados),
+                mode: 'no-cors' // Habilita o no-cors
             })
-            .then(response => response.json())
-            .then(data => {
+            .then(response => {
+                // Com no-cors, não podemos acessar a resposta
                 alert('Dados enviados com sucesso!');
                 document.getElementById("meuFormulario").reset();
                 document.getElementById('enviar').innerText = "Enviar";
