@@ -5,7 +5,102 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Coleta de Endereço</title>
     <style>
-        /* Seu CSS aqui */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e6f0ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            max-width: 450px;
+            width: 100%;
+        }
+
+        h2 {
+            color: #007bff;
+            font-size: 26px;
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            color: #333;
+            font-weight: bold;
+            text-align: left;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        input[type="text"]::placeholder {
+            color: #aaa;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            background-color: gray;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: not-allowed;
+            transition: background-color 0.3s ease;
+        }
+
+        button.ativo {
+            background-color: #007bff;
+            cursor: pointer;
+        }
+
+        button.ativo:hover {
+            background-color: #0056b3;
+        }
+
+        .info {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .whatsapp {
+            margin-top: 15px;
+            font-size: 16px;
+        }
+
+        #localizacaoAviso {
+            color: red;
+            font-weight: bold;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -25,41 +120,40 @@
     </div>
 
     <script>
-function obterLocalizacao() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function(position) {
-            const latitude = position.coords.latitude;
-            const longitude = position.coords.longitude;
-            const precisao = position.coords.accuracy;
+        function obterLocalizacao() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
+                    const precisao = position.coords.accuracy;
 
-            document.getElementById('latitude').value = latitude;
-            document.getElementById('longitude').value = longitude;
+                    document.getElementById('latitude').value = latitude;
+                    document.getElementById('longitude').value = longitude;
 
-            if (precisao < 40) { // Verifica se a precisão é boa (menos de 40 metros)
-                document.getElementById('enviar').disabled = false;
+                    if (precisao < 40) { // Verifica se a precisão é boa (menos de 40 metros)
+                        document.getElementById('enviar').disabled = false;
+                    } else {
+                        document.getElementById('localizacaoAviso').innerText = "Precisão do GPS baixa! Tente mover-se para um local mais aberto.";
+                        document.getElementById('enviar').disabled = true;
+                    }
+                }, function(error) {
+                    if (error.code === error.PERMISSION_DENIED) {
+                        // Usuário não autorizou a localização
+                        document.getElementById('localizacaoAviso').innerText = "Você precisa permitir o acesso ao GPS. Por favor, ative o GPS no seu dispositivo.";
+                        document.getElementById('enviar').disabled = true;
+                    } else {
+                        alert('Erro ao obter localização: ' + error.message);
+                    }
+                }, {
+                    enableHighAccuracy: true, // Força a alta precisão do GPS
+                    timeout: 10000, // Tempo de espera
+                    maximumAge: 0
+                });
             } else {
-                document.getElementById('localizacaoAviso').innerText = "Precisão do GPS baixa! Tente mover-se para um local mais aberto.";
-                document.getElementById('enviar').disabled = true;
+                alert('Seu navegador não suporta geolocalização.');
+                document.getElementById('localizacaoAviso').innerText = "Seu navegador não suporta geolocalização.";
             }
-        }, function(error) {
-            if (error.code === error.PERMISSION_DENIED) {
-                // Usuário não autorizou a localização
-                document.getElementById('localizacaoAviso').innerText = "Você precisa permitir o acesso ao GPS. Por favor, ative o GPS no seu dispositivo.";
-                document.getElementById('enviar').disabled = true;
-            } else {
-                alert('Erro ao obter localização: ' + error.message);
-            }
-        }, {
-            enableHighAccuracy: true, // Força a alta precisão do GPS
-            timeout: 10000, // Tempo de espera
-            maximumAge: 0
-        });
-    } else {
-        alert('Seu navegador não suporta geolocalização.');
-        document.getElementById('localizacaoAviso').innerText = "Seu navegador não suporta geolocalização.";
-    }
-}
-
+        }
 
         window.onload = function() {
             obterLocalizacao();
@@ -86,7 +180,7 @@ function obterLocalizacao() {
             };
 
             // URL do Google Apps Script
-            const url = 'https://script.google.com/macros/s/AKfycbz23e2eHSZ9K5jR0fAQxkYETtRuDkM_xhJOhfVQCidZZNxkWux9I39djGYkpqxV85mu/exec';
+            const url = 'https://script.google.com/macros/s/AKfycbwbUES51EKSLQTnHo4woFXsKYgxELMurLOIolrl7_n9hSyk-ENvwuyUujXH2zo29dg/exec';
 
             // Enviar os dados para o Google Apps Script
             fetch(url, {
