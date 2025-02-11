@@ -1,140 +1,179 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coletar Nome e Localização GPS</title>
+    <title>Coleta de Dados</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            padding: 20px;
-        }
-        h1 {
-            color: #333;
-        }
-        form {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-        label {
-            font-size: 16px;
-            color: #555;
-        }
-        input {
-            padding: 10px;
-            width: 100%;
-            font-size: 16px;
-            margin-bottom: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+        /* Reset básico */
+        * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
         }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e6f0ff; /* Fundo azul claro */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #007bff; /* Azul principal */
+            font-size: 24px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 2px solid #007bff; /* Borda azul */
+            border-radius: 5px;
+            font-size: 16px;
+            color: #333;
+        }
+
+        input[type="text"]::placeholder {
+            color: #aaa;
+        }
+
         button {
-            background-color: #4CAF50;
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff; /* Azul principal */
             color: white;
-            padding: 10px 20px;
             border: none;
             border-radius: 5px;
             font-size: 16px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
+
         button:hover {
-            background-color: #45a049;
+            background-color: #0056b3; /* Azul mais escuro ao passar o mouse */
         }
-        .location-info {
-            background-color: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+        .loading {
+            display: none;
+            margin-top: 15px;
+            color: #007bff;
+            font-size: 14px;
         }
-        .location-info h3 {
-            color: #333;
+
+        .success {
+            display: none;
+            margin-top: 15px;
+            color: #28a745; /* Verde para sucesso */
+            font-size: 14px;
         }
-        .location-info p {
-            color: #555;
+
+        .error {
+            display: none;
+            margin-top: 15px;
+            color: #dc3545; /* Vermelho para erro */
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
-    <h1>Coletar Nome e Localização via GPS</h1>
+    <div class="container">
+        <h2>Coleta de Dados</h2>
+        <form id="meuFormulario">
+            <label for="nome">Nome:</label>
+            <input type="text" id="nome" name="nome" placeholder="Digite seu nome" required>
 
-    <form id="form">
-        <label for="name">Nome:</label>
-        <input type="text" id="name" placeholder="Digite seu nome" required>
-        
-        <button type="button" onclick="getLocation()">Capturar Localização</button>
-    </form>
+            <!-- Campos ocultos para armazenar latitude e longitude -->
+            <input type="hidden" id="latitude" name="latitude">
+            <input type="hidden" id="longitude" name="longitude">
 
-    <div class="location-info" id="location">
-        <h3>Informações de Localização</h3>
-        <p><strong>Latitude:</strong> <span id="latitude"></span></p>
-        <p><strong>Longitude:</strong> <span id="longitude"></span></p>
+            <button type="submit">Enviar</button>
+        </form>
+
+        <!-- Mensagens de feedback -->
+        <div class="loading" id="loading">Enviando dados...</div>
+        <div class="success" id="success">Dados enviados com sucesso!</div>
+        <div class="error" id="error">Erro ao enviar dados. Tente novamente.</div>
     </div>
 
     <script>
-        let latitude, longitude;
-
         // Função para obter a localização do usuário
-        function getLocation() {
+        function obterLocalizacao() {
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(showPosition, showError);
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    // Preenche os campos ocultos com latitude e longitude
+                    document.getElementById('latitude').value = position.coords.latitude;
+                    document.getElementById('longitude').value = position.coords.longitude;
+                }, function(error) {
+                    alert('Erro ao obter localização: ' + error.message);
+                });
             } else {
-                alert("Geolocalização não é suportada neste navegador.");
+                alert('Geolocalização não é suportada pelo seu navegador.');
             }
         }
 
-        // Função para mostrar a posição do usuário
-        function showPosition(position) {
-            latitude = position.coords.latitude;
-            longitude = position.coords.longitude;
-            document.getElementById("latitude").textContent = latitude;
-            document.getElementById("longitude").textContent = longitude;
-            saveToSheet();
-        }
+        // Chama a função para obter a localização quando a página carregar
+        window.onload = obterLocalizacao;
 
-        // Função para tratar erros ao obter a localização
-        function showError(error) {
-            switch(error.code) {
-                case error.PERMISSION_DENIED:
-                    alert("Usuário negou a solicitação de Geolocalização.");
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    alert("Informações de localização não estão disponíveis.");
-                    break;
-                case error.TIMEOUT:
-                    alert("A solicitação para obter a localização expirou.");
-                    break;
-                case error.UNKNOWN_ERROR:
-                    alert("Erro desconhecido.");
-                    break;
-            }
-        }
+        // Envia os dados para o Google Sheets
+        document.getElementById('meuFormulario').addEventListener('submit', function(e) {
+            e.preventDefault(); // Impede o envio padrão do formulário
 
-        // Função para salvar as informações no Google Sheets
-        function saveToSheet() {
-            const name = document.getElementById("name").value;
-            const sheetUrl = "https://script.google.com/macros/s/AKfycbz23e2eHSZ9K5jR0fAQxkYETtRuDkM_xhJOhfVQCidZZNxkWux9I39djGYkpqxV85mu/exec";  // Substitua pela URL do seu Google Apps Script;  // Coloque a URL do seu Google Sheet aqui
-            const scriptUrl = sheetUrl + "/exec";  // URL do Google Apps Script
+            // Mostra o carregamento e esconde outras mensagens
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('success').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
 
-            // Envia as informações para o Google Sheets
-            fetch(scriptUrl, {
+            const nome = document.getElementById('nome').value;
+            const latitude = document.getElementById('latitude').value;
+            const longitude = document.getElementById('longitude').value;
+
+            // URL do Google Apps Script
+            const url = 'https://script.google.com/macros/s/AKfycbziCsTyh-gcLDq93GIF0QctvH0ZUbEPLrmzmOToQ1du5Mb6AEgtSG7lwsCGwHkp4gQY/exec';
+
+            // Envia os dados via fetch
+            fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: name, latitude: latitude, longitude: longitude })
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ nome, latitude, longitude }),
             })
-            .then(response => response.json())
-            .then(data => {
-                alert("Informações enviadas com sucesso!");
+            .then(() => {
+                // Mostra mensagem de sucesso
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('success').style.display = 'block';
+                document.getElementById('meuFormulario').reset(); // Limpa o formulário
             })
-            .catch(error => {
-                console.error("Erro ao enviar para o Google Sheets", error);
-                alert("Houve um erro ao enviar as informações.");
+            .catch(() => {
+                // Mostra mensagem de erro
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
             });
-        }
+        });
     </script>
 </body>
 </html>
